@@ -1,0 +1,315 @@
+[
+    {
+        "label": "sqlite3",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "sqlite3",
+        "description": "sqlite3",
+        "detail": "sqlite3",
+        "documentation": {}
+    },
+    {
+        "label": "logging",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "logging",
+        "description": "logging",
+        "detail": "logging",
+        "documentation": {}
+    },
+    {
+        "label": "discord",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "discord",
+        "description": "discord",
+        "detail": "discord",
+        "documentation": {}
+    },
+    {
+        "label": "app_commands",
+        "importPath": "discord",
+        "description": "discord",
+        "isExtraImport": true,
+        "detail": "discord",
+        "documentation": {}
+    },
+    {
+        "label": "app_commands",
+        "importPath": "discord",
+        "description": "discord",
+        "isExtraImport": true,
+        "detail": "discord",
+        "documentation": {}
+    },
+    {
+        "label": "commands",
+        "importPath": "discord.ext",
+        "description": "discord.ext",
+        "isExtraImport": true,
+        "detail": "discord.ext",
+        "documentation": {}
+    },
+    {
+        "label": "commands",
+        "importPath": "discord.ext",
+        "description": "discord.ext",
+        "isExtraImport": true,
+        "detail": "discord.ext",
+        "documentation": {}
+    },
+    {
+        "label": "get_price_from_yahoo_finance",
+        "importPath": "webscraper.get_stock",
+        "description": "webscraper.get_stock",
+        "isExtraImport": true,
+        "detail": "webscraper.get_stock",
+        "documentation": {}
+    },
+    {
+        "label": "os",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "os",
+        "description": "os",
+        "detail": "os",
+        "documentation": {}
+    },
+    {
+        "label": "requests",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "requests",
+        "description": "requests",
+        "detail": "requests",
+        "documentation": {}
+    },
+    {
+        "label": "stock_bot.cogs.stock",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "stock_bot.cogs.stock",
+        "description": "stock_bot.cogs.stock",
+        "detail": "stock_bot.cogs.stock",
+        "documentation": {}
+    },
+    {
+        "label": "load_dotenv",
+        "importPath": "dotenv",
+        "description": "dotenv",
+        "isExtraImport": true,
+        "detail": "dotenv",
+        "documentation": {}
+    },
+    {
+        "label": "BeautifulSoup",
+        "importPath": "bs4",
+        "description": "bs4",
+        "isExtraImport": true,
+        "detail": "bs4",
+        "documentation": {}
+    },
+    {
+        "label": "BeautifulSoup",
+        "importPath": "bs4",
+        "description": "bs4",
+        "isExtraImport": true,
+        "detail": "bs4",
+        "documentation": {}
+    },
+    {
+        "label": "add_stock_or_edit",
+        "importPath": "database.sqlite.stock",
+        "description": "database.sqlite.stock",
+        "isExtraImport": true,
+        "detail": "database.sqlite.stock",
+        "documentation": {}
+    },
+    {
+        "label": "setup",
+        "importPath": "setuptools",
+        "description": "setuptools",
+        "isExtraImport": true,
+        "detail": "setuptools",
+        "documentation": {}
+    },
+    {
+        "label": "find_packages",
+        "importPath": "setuptools",
+        "description": "setuptools",
+        "isExtraImport": true,
+        "detail": "setuptools",
+        "documentation": {}
+    },
+    {
+        "label": "Stock",
+        "kind": 6,
+        "importPath": "database.sqlite.stock",
+        "description": "database.sqlite.stock",
+        "peekOfCode": "class Stock():\n    __tablename__ = \"stock\"\n    symbol: str\n    price : float\n    def __init__(self, symbol, price):\n        self.symbol=symbol\n        self.price=price\ndef _create_session():\n    conn = sqlite3.connect(\"stock_prices.db\")\n    session = conn.cursor()",
+        "detail": "database.sqlite.stock",
+        "documentation": {}
+    },
+    {
+        "label": "get_all_stocks",
+        "kind": 2,
+        "importPath": "database.sqlite.stock",
+        "description": "database.sqlite.stock",
+        "peekOfCode": "def get_all_stocks():\n    conn, cursor = _create_session()\n    stocks = cursor.execute(f\"SELECT * FROM {Stock.__tablename__}\").fetchall()\n    conn.close()\n    return stocks\ndef add_stock_or_edit(symbol: str, price: float) -> None:\n    conn, cursor = _create_session()\n    stock = Stock(symbol=symbol, price=price)\n    # if is_duplicate_stock(symbol):\n    #     edit_stock(symbol, price)",
+        "detail": "database.sqlite.stock",
+        "documentation": {}
+    },
+    {
+        "label": "add_stock_or_edit",
+        "kind": 2,
+        "importPath": "database.sqlite.stock",
+        "description": "database.sqlite.stock",
+        "peekOfCode": "def add_stock_or_edit(symbol: str, price: float) -> None:\n    conn, cursor = _create_session()\n    stock = Stock(symbol=symbol, price=price)\n    # if is_duplicate_stock(symbol):\n    #     edit_stock(symbol, price)\n    #     return\n    with conn:\n        query = f\"INSERT OR REPLACE INTO {Stock.__tablename__} (symbol, price) VALUES ('{stock.symbol}', {stock.price})\"\n        logging.debug(query)\n        cursor.execute(query)",
+        "detail": "database.sqlite.stock",
+        "documentation": {}
+    },
+    {
+        "label": "is_duplicate_stock",
+        "kind": 2,
+        "importPath": "database.sqlite.stock",
+        "description": "database.sqlite.stock",
+        "peekOfCode": "def is_duplicate_stock(target_stock: any): # TODO: ADD STOCK TYPE!!!!!\n    conn, cursor = _create_session()\n    with conn:\n        all_stocks = cursor.execute(f\"SELECT * FROM {Stock.__tablename__}\").fetchall()\n    for stock in all_stocks:\n        if stock[0] == target_stock[0]:\n            return True\n    return False\ndef edit_stock(symbol: str, price : float):\n    conn, cursor = _create_session()",
+        "detail": "database.sqlite.stock",
+        "documentation": {}
+    },
+    {
+        "label": "edit_stock",
+        "kind": 2,
+        "importPath": "database.sqlite.stock",
+        "description": "database.sqlite.stock",
+        "peekOfCode": "def edit_stock(symbol: str, price : float):\n    conn, cursor = _create_session()\n    with conn:\n        cursor.execute(f\"\"\"\n                        UPDATE {Stock.__tablename__}\n                        SET price = {price}\n                        WHERE symbol = '{symbol}'\n                        \"\"\")",
+        "detail": "database.sqlite.stock",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "kind": 5,
+        "importPath": "database.sqlite.stock",
+        "description": "database.sqlite.stock",
+        "peekOfCode": "logger = logging.getLogger(\"Sqlite Database\")\nclass Stock():\n    __tablename__ = \"stock\"\n    symbol: str\n    price : float\n    def __init__(self, symbol, price):\n        self.symbol=symbol\n        self.price=price\ndef _create_session():\n    conn = sqlite3.connect(\"stock_prices.db\")",
+        "detail": "database.sqlite.stock",
+        "documentation": {}
+    },
+    {
+        "label": "MyCog",
+        "kind": 6,
+        "importPath": "stock_bot.cogs.stock",
+        "description": "stock_bot.cogs.stock",
+        "peekOfCode": "class MyCog(commands.Cog):\n  def __init__(self, bot: commands.Bot) -> None:\n    self.bot = bot\n  group = app_commands.Group(name=\"stock\", description=\"all stock related commands\")\n  # Above, we declare a command Group, in discord terms this is a parent command\n  # We define it within the class scope (not an instance scope) so we can use it as a decorator.\n  # This does have namespace caveats but i don't believe they're worth outlining in our needs.\n  @group.command(name=\"price\")    # we use the declared group to make a command.\n  async def get_price(self, interaction: discord.Interaction, symbol: str) -> None:\n    \"\"\" /price sub-command \"\"\"",
+        "detail": "stock_bot.cogs.stock",
+        "documentation": {}
+    },
+    {
+        "label": "logger",
+        "kind": 5,
+        "importPath": "stock_bot.cogs.stock",
+        "description": "stock_bot.cogs.stock",
+        "peekOfCode": "logger = logging.getLogger(\"SetUp\")\nclass MyCog(commands.Cog):\n  def __init__(self, bot: commands.Bot) -> None:\n    self.bot = bot\n  group = app_commands.Group(name=\"stock\", description=\"all stock related commands\")\n  # Above, we declare a command Group, in discord terms this is a parent command\n  # We define it within the class scope (not an instance scope) so we can use it as a decorator.\n  # This does have namespace caveats but i don't believe they're worth outlining in our needs.\n  @group.command(name=\"price\")    # we use the declared group to make a command.\n  async def get_price(self, interaction: discord.Interaction, symbol: str) -> None:",
+        "detail": "stock_bot.cogs.stock",
+        "documentation": {}
+    },
+    {
+        "label": "intents",
+        "kind": 5,
+        "importPath": "stock_bot.main",
+        "description": "stock_bot.main",
+        "peekOfCode": "intents = discord.Intents.all()\nclient =   commands.Bot(intents=intents, command_prefix=\"!\")\n@client.event\nasync def on_ready() -> None:\n    logging.info(\"Sync has run\")\n    await stock_bot.cogs.stock.setup(client)\n    await client.tree.sync()\n    logging.info(\"Bot is ready!!\")\n# group = app_commands.Group(name=\"stock\", description=\"all stock related commands\")\n# @group.command(",
+        "detail": "stock_bot.main",
+        "documentation": {}
+    },
+    {
+        "label": "client",
+        "kind": 5,
+        "importPath": "stock_bot.main",
+        "description": "stock_bot.main",
+        "peekOfCode": "client =   commands.Bot(intents=intents, command_prefix=\"!\")\n@client.event\nasync def on_ready() -> None:\n    logging.info(\"Sync has run\")\n    await stock_bot.cogs.stock.setup(client)\n    await client.tree.sync()\n    logging.info(\"Bot is ready!!\")\n# group = app_commands.Group(name=\"stock\", description=\"all stock related commands\")\n# @group.command(\n#     name=\"test\",",
+        "detail": "stock_bot.main",
+        "documentation": {}
+    },
+    {
+        "label": "update_database",
+        "kind": 2,
+        "importPath": "webscraper.get_stock",
+        "description": "webscraper.get_stock",
+        "peekOfCode": "def update_database():\n    for stock in STOCKS:\n        _add_stock(stock, 99)",
+        "detail": "webscraper.get_stock",
+        "documentation": {}
+    },
+    {
+        "label": "STOCKS",
+        "kind": 5,
+        "importPath": "webscraper.get_stock",
+        "description": "webscraper.get_stock",
+        "peekOfCode": "STOCKS = [\n    # https://www.nasdaqtrader.com/dynamic/symdir/nasdaqlisted.txt <-- LIST OF ALL NASDAQ STOCKS!!!\n    'goog',\n    'ssss'\n]\nSEARCH_LINK_TEMPLATE = \"https://finance.yahoo.com/quote/{symbol}\"\nheaders = {\n    \"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0\",\n    \"From\": os.environ[\"email\"],\n}",
+        "detail": "webscraper.get_stock",
+        "documentation": {}
+    },
+    {
+        "label": "SEARCH_LINK_TEMPLATE",
+        "kind": 5,
+        "importPath": "webscraper.get_stock",
+        "description": "webscraper.get_stock",
+        "peekOfCode": "SEARCH_LINK_TEMPLATE = \"https://finance.yahoo.com/quote/{symbol}\"\nheaders = {\n    \"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0\",\n    \"From\": os.environ[\"email\"],\n}\nhtml_doc = requests.get(SEARCH_LINK_TEMPLATE, headers=headers)\nprint(\"dj\")\ndef _get_price_from_yahoo_finance(symbol: str) -> int:\n    html_doc = requests.get(SEARCH_LINK_TEMPLATE.format(symbol=symbol), headers=headers)\n    soup = BeautifulSoup(html_doc.text, \"html.parser\")",
+        "detail": "webscraper.get_stock",
+        "documentation": {}
+    },
+    {
+        "label": "headers",
+        "kind": 5,
+        "importPath": "webscraper.get_stock",
+        "description": "webscraper.get_stock",
+        "peekOfCode": "headers = {\n    \"User-Agent\": \"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0\",\n    \"From\": os.environ[\"email\"],\n}\nhtml_doc = requests.get(SEARCH_LINK_TEMPLATE, headers=headers)\nprint(\"dj\")\ndef _get_price_from_yahoo_finance(symbol: str) -> int:\n    html_doc = requests.get(SEARCH_LINK_TEMPLATE.format(symbol=symbol), headers=headers)\n    soup = BeautifulSoup(html_doc.text, \"html.parser\")\n    price_element = soup.find(name=\"span\", attrs={\"data-testid\": \"qsp-price\"})",
+        "detail": "webscraper.get_stock",
+        "documentation": {}
+    },
+    {
+        "label": "html_doc",
+        "kind": 5,
+        "importPath": "webscraper.get_stock",
+        "description": "webscraper.get_stock",
+        "peekOfCode": "html_doc = requests.get(SEARCH_LINK_TEMPLATE, headers=headers)\nprint(\"dj\")\ndef _get_price_from_yahoo_finance(symbol: str) -> int:\n    html_doc = requests.get(SEARCH_LINK_TEMPLATE.format(symbol=symbol), headers=headers)\n    soup = BeautifulSoup(html_doc.text, \"html.parser\")\n    price_element = soup.find(name=\"span\", attrs={\"data-testid\": \"qsp-price\"})\n    if price_element is None:\n        return None\n    return float(\n        str(",
+        "detail": "webscraper.get_stock",
+        "documentation": {}
+    },
+    {
+        "label": "GOOLGLE_SEARCH_LINK_TEMPLATE",
+        "kind": 5,
+        "importPath": "webscraper.test",
+        "description": "webscraper.test",
+        "peekOfCode": "GOOLGLE_SEARCH_LINK_TEMPLATE = \"https://finance.yahoo.com/quote/AAPL/\"\nheaders = {\n    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0',\n    'From': 'youremail@domain.example'  # This is another valid field\n}\nhtml_doc = requests.get(GOOLGLE_SEARCH_LINK_TEMPLATE, headers=headers)\nprint(\"dj\")\nsoup = BeautifulSoup(html_doc.text, 'html.parser')\nwith open('response.html', 'w', encoding='UTF-8') as f:\n    f.write(int(soup.find(name=\"span\" ,attrs={\"data-testid\" : \"qsp-price\"}).contents[0]))",
+        "detail": "webscraper.test",
+        "documentation": {}
+    },
+    {
+        "label": "headers",
+        "kind": 5,
+        "importPath": "webscraper.test",
+        "description": "webscraper.test",
+        "peekOfCode": "headers = {\n    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36 Edg/133.0.0.0',\n    'From': 'youremail@domain.example'  # This is another valid field\n}\nhtml_doc = requests.get(GOOLGLE_SEARCH_LINK_TEMPLATE, headers=headers)\nprint(\"dj\")\nsoup = BeautifulSoup(html_doc.text, 'html.parser')\nwith open('response.html', 'w', encoding='UTF-8') as f:\n    f.write(int(soup.find(name=\"span\" ,attrs={\"data-testid\" : \"qsp-price\"}).contents[0]))",
+        "detail": "webscraper.test",
+        "documentation": {}
+    },
+    {
+        "label": "html_doc",
+        "kind": 5,
+        "importPath": "webscraper.test",
+        "description": "webscraper.test",
+        "peekOfCode": "html_doc = requests.get(GOOLGLE_SEARCH_LINK_TEMPLATE, headers=headers)\nprint(\"dj\")\nsoup = BeautifulSoup(html_doc.text, 'html.parser')\nwith open('response.html', 'w', encoding='UTF-8') as f:\n    f.write(int(soup.find(name=\"span\" ,attrs={\"data-testid\" : \"qsp-price\"}).contents[0]))",
+        "detail": "webscraper.test",
+        "documentation": {}
+    },
+    {
+        "label": "soup",
+        "kind": 5,
+        "importPath": "webscraper.test",
+        "description": "webscraper.test",
+        "peekOfCode": "soup = BeautifulSoup(html_doc.text, 'html.parser')\nwith open('response.html', 'w', encoding='UTF-8') as f:\n    f.write(int(soup.find(name=\"span\" ,attrs={\"data-testid\" : \"qsp-price\"}).contents[0]))",
+        "detail": "webscraper.test",
+        "documentation": {}
+    }
+]

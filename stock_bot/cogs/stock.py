@@ -20,8 +20,11 @@ class MyCog(commands.Cog):
   @group.command(name="price")    # we use the declared group to make a command.
   async def get_price(self, interaction: discord.Interaction, symbol: str) -> None:
     """ /price sub-command """
-    price = get_price_from_yahoo_finance(symbol)
     await interaction.response.defer(ephemeral=True, thinking=True)
+    price = get_price_from_yahoo_finance(symbol)
+    if price is None:
+      await interaction.followup.send("Something went wrong. You likely entered an invalid symbol.", ephemeral=True)
+      return
     await interaction.followup.send(str(price), ephemeral=True)
 
 async def setup(bot: commands.Bot) -> None:
