@@ -5,3 +5,4 @@ bs4
 setuptools
 sqlite3
 fake-useragent
+firebase_admin
