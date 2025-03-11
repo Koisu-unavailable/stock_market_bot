@@ -2,17 +2,12 @@ import sqlite3
 
 import logging
 
+from database.stock_obj import Stock
 logger = logging.getLogger("Sqlite Database")
 
 
 
-class Stock():
-    __tablename__ = "stock"
-    symbol: str
-    price : float
-    def __init__(self, symbol, price):
-        self.symbol=symbol
-        self.price=price
+
 
 def _create_session():
     conn = sqlite3.connect("stock_prices.db")
@@ -25,11 +20,11 @@ def get_all_stocks():
     conn.close()
     return stocks
 
-def add_stock_or_edit(symbol: str, price: float) -> None:
+def add_stock_or_edit(symbol: str, price: float, exchange: str) -> None:
     conn, cursor = _create_session()
-    stock = Stock(symbol=symbol, price=price)
+    stock = Stock(symbol=symbol, price=price, exchange=exchange)
     with conn:
-        query = f"INSERT OR REPLACE INTO {Stock.__tablename__} (symbol, price) VALUES ('{stock.symbol}', {stock.price})"
+        query = f"INSERT OR REPLACE INTO {Stock.__tablename__} (symbol, price, market) VALUES ('{stock.symbol}', {stock.price}, '{exchange}')"
         logging.debug(query)
         cursor.execute(query)
     return

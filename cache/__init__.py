@@ -1,0 +1,1 @@
+from cache.memory_cache import STOCK_CACHE

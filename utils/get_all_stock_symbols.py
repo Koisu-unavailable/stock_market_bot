@@ -1,6 +1,6 @@
 import requests
 
-def get_all_symbols():
+def get_all_symbols() -> list[str]:
     list_of_stocks = requests.get("https://www.nasdaqtrader.com/dynamic/symdir/nasdaqlisted.txt").text
     
     with open("list_of_stocks.txt","w") as f:
@@ -30,7 +30,5 @@ def get_all_symbols():
         symbols.pop(len(symbols)-1) 
         # remove last  2 elements
     return symbols
-    
-get_all_symbols()
-    
+        
                 
