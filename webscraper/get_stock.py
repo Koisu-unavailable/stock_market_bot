@@ -34,11 +34,15 @@ def get_price_from_yahoo_finance(symbol: str):
     logger.debug("Found price element: " + str(price_element))
     exchange_element = soup.find("span", class_="exchange")
     logger.debug("Found exchange element: " + str(exchange_element))
+    display_name_element = soup.find("h1", class_="yf-xxbei9")
+    logger.debug("Found display_name element: " + str(display_name_element))
     if exchange_element is None:
         return None
     exchange = exchange_element.contents[0].contents[0]
     exchange = trim_at_char(exchange, " ")
-    
+    if display_name_element is None:
+        return None
+    display_name = trim_at_char(display_name_element.contents[0], "(")
     if price_element is None:
         return None
     stock_price = float(
@@ -46,10 +50,10 @@ def get_price_from_yahoo_finance(symbol: str):
             price_element.contents[0]
         ).strip(" ")
     )
-    return Stock(symbol, stock_price, exchange)
+    return Stock(symbol, stock_price, exchange, display_name)
     
-def _add_stock(symbol: str):
-    add_stock_or_edit(symbol, get_price_from_yahoo_finance(symbol))
+# def _add_stock(symbol: str):
+#     add_stock_or_edit(symbol, get_price_from_yahoo_finance(symbol))
     
 # def update_database(): <-- THIS IS A DEATH FUNCTION DON'T RUN IT
 #     for stock in STOCKS:

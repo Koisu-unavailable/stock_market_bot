@@ -20,11 +20,10 @@ def get_all_stocks():
     conn.close()
     return stocks
 
-def add_stock_or_edit(symbol: str, price: float, exchange: str) -> None:
+def add_stock_or_edit(stock: Stock) -> None:
     conn, cursor = _create_session()
-    stock = Stock(symbol=symbol, price=price, exchange=exchange)
     with conn:
-        query = f"INSERT OR REPLACE INTO {Stock.__tablename__} (symbol, price, market) VALUES ('{stock.symbol}', {stock.price}, '{exchange}')"
+        query = f"INSERT OR REPLACE INTO {Stock.__tablename__} (symbol, price, market) VALUES ('{stock.symbol}', {stock.price}, '{stock.exchange}')" # TODO: ADD DISPLAY NAME
         logging.debug(query)
         cursor.execute(query)
     return

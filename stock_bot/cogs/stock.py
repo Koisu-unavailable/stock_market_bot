@@ -36,7 +36,7 @@ class Stock_Cog(commands.Cog):
             raise StockIsNoneException(
                 f"{symbol} returned None from get_syjmbol_from_yahoo_finance"
             )
-        add_stock_or_edit(symbol, stock.price, stock.exchange)
+        # add_stock_or_edit(symbol, stock.price, stock.exchange)
         STOCK_CACHE[symbol] = stock
         return stock
 
@@ -105,7 +105,7 @@ class Stock_Cog(commands.Cog):
             await interaction.followup.send(f"You do not have this stock: {symbol}")
             return
         if user.stocks[symbol] < amount:
-            await interaction.followup.send(f"You have too little {symbol} stock(s)")
+            await interaction.followup.send(f"You have too little {stock.display_name} stock(s)")
             return
         user.stocks[symbol] -= 1 * amount
         if user.stocks[symbol] == 0:
