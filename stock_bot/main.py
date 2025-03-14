@@ -40,6 +40,6 @@ async def on_ready() -> None:
 
 client.run(
     os.environ["TOKEN"],
-    log_level=os.environ.get("LOG_LEVEL", "INFO").upper(),
+    log_level=os.environ.get("LOG_LEVEL", "INFO").upper(), # type: ignore
     root_logger=True,
 )

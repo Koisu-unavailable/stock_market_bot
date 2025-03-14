@@ -1,3 +1,4 @@
+from typing import Callable
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -8,7 +9,9 @@ from database.sqlite.database_stock import add_stock_or_edit, get_all_stocks
 
 from cache import STOCK_CACHE
 from database.stock_obj import Stock
-from stock_bot.errors import StockIsNoneException
+from stock_bot.errors import StockIsNoneException, StockNotFound, UserIsPoor
+from database.firebase.databse_user import get_user_by_id, add_or_update_user
+from database.firebase.User import User
 
 logger = logging.getLogger("SetUp")
 
@@ -38,6 +41,42 @@ class Stock_Cog(commands.Cog):
     async def get_price(self, interaction: discord.Interaction, symbol: str) -> None:
         """Get the prrice of a stock, prefer the memory cache for retreiving"""
         await interaction.response.defer(ephemeral=True, thinking=True)
+        try:
+            stock = await self._get_price_of_stock(symbol)
+        except StockNotFound as e:
+            await self._stock_not_found(interaction, e)
+            return
+        price = stock.price
+        exchange = stock.exchange
+        await interaction.followup.send(str(price) + str(exchange), ephemeral=True)
+        return
+
+    @group.command(name="buy", description="buy a stock")
+    async def buy_stock(self, interaction: discord.Interaction, symbol: str):
+        await interaction.response.defer(ephemeral=True, thinking=True)
+        userId = interaction.user.id
+        user = get_user_by_id(userId)
+
+        if user is None:
+            user = User(userId, {}, 0)
+            add_or_update_user(user)
+        stock = await self._get_price_of_stock(symbol)
+        price = stock.price
+        if user.money < price:
+            await interaction.followup.send(f"You're too poor for the requested stock. You have ${user.money},you need ${price}")
+            return
+        user.money -= price
+        try:
+            user.stocks[symbol] += 1
+        except KeyError:
+            user.stocks[symbol] = 1
+        
+        add_or_update_user(user)
+        await interaction.followup.send(f"You now have {user.stocks[symbol]} {symbol} stock")
+        return
+        
+
+    async def _get_price_of_stock(self, symbol: str) -> Stock:
         all_symbols = STOCK_CACHE.keys()
         stock_is_there = False
         for stock_symbol in all_symbols:
@@ -47,16 +86,24 @@ class Stock_Cog(commands.Cog):
         try:
             stock = self._get_stock_and_cache(symbol, stock_is_there)
         except StockIsNoneException as e:
-            logger.error(e)
-            await interaction.followup.send(
-                "Something went wrong. Perhaps you've entered an invalid symbol.",
-                ephemeral=True,
-            )
-            return
-        price = stock.price
-        exchange = stock.exchange
-        await interaction.followup.send(str(price) + str(exchange), ephemeral=True)
-        return
+            all_symbols = STOCK_CACHE.keys()
+        stock_is_there = False
+        for stock_symbol in all_symbols:
+            if stock_symbol == symbol:
+                stock_is_there = True
+                break
+        try:
+            stock = self._get_stock_and_cache(symbol, stock_is_there)
+            return stock
+        except StockIsNoneException as e:
+            raise StockNotFound(f"Stock: {symbol} was not found")
+
+    async def _stock_not_found(self, interaction: discord.Interaction, e: Exception):
+        logger.error(e)
+        await interaction.followup.send(
+            "Something went wrong. Perhaps you've entered an invalid symbol.",
+            ephemeral=True,
+        )
 
 
 async def setup(bot: commands.Bot) -> None:

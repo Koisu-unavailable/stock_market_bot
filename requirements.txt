@@ -6,3 +6,4 @@ setuptools
 sqlite3
 fake-useragent
 firebase_admin
+recordclass
