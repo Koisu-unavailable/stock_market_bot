@@ -13,9 +13,9 @@ import stock_bot.cogs.stock
 
 from dotenv import load_dotenv
 
-assert load_dotenv("./.env")
+assert load_dotenv("./.env") # make sure it loads
 intents = discord.Intents.all()
-client =   commands.Bot(intents=intents, command_prefix="!")
+client = commands.Bot(intents=intents, command_prefix="!") # command prefix doesn't really matter as this bot uses slash commands
 
 
 
