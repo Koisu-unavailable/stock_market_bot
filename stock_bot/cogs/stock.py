@@ -5,6 +5,8 @@ from discord.ext import commands
 
 import logging
 
+import discord.types
+
 
 from webscraper.get_stock import get_price_from_yahoo_finance
 from database.sqlite.database_stock import add_stock_or_edit, get_all_stocks
@@ -14,6 +16,7 @@ from database.stock_obj import Stock
 from stock_bot.errors import StockIsNoneException, StockNotFound, UserIsPoor
 from database.firebase.databse_user import get_user_by_id, add_or_update_user
 from database.firebase.User import User
+from utils import is_greater_than_zero
 
 logger = logging.getLogger("StockCog")
 
@@ -23,7 +26,7 @@ class Stock_Cog(commands.Cog):
         self.bot = bot
 
     group = app_commands.Group(name="stock", description="all stock related commands")
-    
+
     def _get_stock_and_cache(self, symbol: str, stock_is_there: bool):
         if stock_is_there:
             return STOCK_CACHE[symbol]
@@ -54,63 +57,79 @@ class Stock_Cog(commands.Cog):
         return
 
     @group.command(name="buy", description="buy a stock")
-    async def buy_stock(self, interaction: discord.Interaction, symbol: str):
+    async def buy_stock(
+        self, interaction: discord.Interaction, symbol: str, amount: int
+    ):
         await interaction.response.defer(ephemeral=True, thinking=True)
-        user = self._get_user_from_interaction(interaction)
-        stock = await self._get_stock(symbol)
-        price = stock.price
+        if not is_greater_than_zero(amount):
+            await interaction.followup.send(f"{amount} is not a valid amount.")
+            return
+        user = await self._get_user_from_interaction(interaction)
+        try:
+            stock = await self._get_stock(symbol)
+        except StockNotFound as e:
+            await self._stock_not_found(interaction, e)
+        price = stock.price * amount
         if user.money < price:
-            await interaction.followup.send(f"You're too poor for the requested stock. You have ${user.money},you need ${price}")
+            await interaction.followup.send(
+                f"You're too poor for the requested stock(s). You have ${user.money},you need ${price}"
+            )
             return
         user.money -= price
         try:
-            user.stocks[symbol] += 1
+            user.stocks[symbol] += 1 * amount
         except KeyError:
-            user.stocks[symbol] = 1
-        
+            user.stocks[symbol] = 1 * amount
+
         add_or_update_user(user)
-        await interaction.followup.send(f"You now have {user.stocks[symbol]} {symbol} stock")
+        await interaction.followup.send(
+            f"You now have {user.stocks[symbol]} {symbol} stock"
+        )
         return
+
     @group.command(name="sell", description="sell a stock with for profit (hopefully)")
-    async def sell_stock(self, interaction: discord.Interaction, stock: str):
+    async def sell_stock(
+        self, interaction: discord.Interaction, symbol: str, amount: int
+    ):
         await interaction.response.defer(ephemeral=True, thinking=True)
-        user: User = await self._get_user_from_interaction(interaction)
-        stock = await self._get_stock(stock)
-        if stock not in user.stocks.keys():
-            await interaction.followup.send(f"You do not have this stock: {stock}")
+        if not is_greater_than_zero(amount):
+            await interaction.followup.send(f"{amount} is not a valid amount.")
             return
-        user.stocks[stock] -= 1
-        if user.stocks[stock] == 0:
-            user.stocks.pop(stock)
-        user.money += stock.price
-        
-            
-    
-    
-    
-    @sell_stock.autocomplete("stock")
-    async def sell_stock_autocomplete(self, interaction: discord.Interaction, current: str) -> List[app_commands.Choice[str]]:
+        user: User = await self._get_user_from_interaction(interaction)
+
+        try:
+            stock = await self._get_stock(symbol)
+        except StockNotFound as e:
+            await self._stock_not_found(interaction, e)
+        if symbol not in list(user.stocks.keys()):
+            await interaction.followup.send(f"You do not have this stock: {symbol}")
+            return
+        if user.stocks[symbol] < amount:
+            await interaction.followup.send(f"You have too little {symbol} stock(s)")
+            return
+        user.stocks[symbol] -= 1 * amount
+        if user.stocks[symbol] == 0:
+            user.stocks.pop(symbol)
+        user.money += stock.price * amount
+        add_or_update_user(user)
+        await interaction.followup.send(
+            f"Successfully sold {amount} of {symbol} stock(s)"
+        )
+        return
+
+    @sell_stock.autocomplete("symbol")
+    async def sell_stock_autocomplete(
+        self, interaction: discord.Interaction, current: str
+    ) -> List[app_commands.Choice[str]]:
         data = []
         user = get_user_by_id(interaction.user.id)
         for symbol in user.stocks.keys():
             if symbol != "None" and current.lower() in symbol:
                 data.append(app_commands.Choice(name=symbol, value=symbol))
         return data
-    
-    
-    
+
     async def _get_stock(self, symbol: str) -> Stock:
-        
         all_symbols = STOCK_CACHE.keys()
-        stock_is_there = False
-        for stock_symbol in all_symbols:
-            if stock_symbol == symbol:
-                stock_is_there = True
-                break
-        try:
-            stock = self._get_stock_and_cache(symbol, stock_is_there)
-        except StockIsNoneException as e:
-            all_symbols = STOCK_CACHE.keys()
         stock_is_there = False
         for stock_symbol in all_symbols:
             if stock_symbol == symbol:
@@ -128,7 +147,10 @@ class Stock_Cog(commands.Cog):
             "Something went wrong. Perhaps you've entered an invalid symbol.",
             ephemeral=True,
         )
-    async def _get_user_from_interaction(self, interaction: discord.Interaction) -> User:
+
+    async def _get_user_from_interaction(
+        self, interaction: discord.Interaction
+    ) -> User:
         userId = interaction.user.id
         user = get_user_by_id(userId)
 
@@ -136,6 +158,7 @@ class Stock_Cog(commands.Cog):
             user = User(userId, {}, 0)
             add_or_update_user(user)
         return user
+
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Stock_Cog(bot))
