@@ -1,17 +1,13 @@
 import logging
 import os
 
-
 import discord
+import requests
 from discord import app_commands
 from discord.ext import commands
-
-import requests
-
+from dotenv import load_dotenv
 
 import stock_bot.cogs.stock
-
-from dotenv import load_dotenv
 
 assert load_dotenv("./.env")  # make sure it loads
 intents = discord.Intents.all()
@@ -39,6 +35,6 @@ async def on_ready() -> None:
 
 client.run(
     os.environ["TOKEN"],
-    log_level=os.environ.get("LOG_LEVEL", "INFO").upper(),  # type: ignore
+    log_level=os.environ.get("LOG_LEVEL", "INFO").upper(),  
     root_logger=True,
 )

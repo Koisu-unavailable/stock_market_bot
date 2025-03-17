@@ -1,22 +1,19 @@
-from typing import Literal, List
+import logging
+from typing import List, Literal
+
 import discord
+import discord.types
 from discord import app_commands
 from discord.ext import commands
 
-import logging
-
-import discord.types
-
-
-from webscraper.get_stock import get_price_from_yahoo_finance
-from database.sqlite.database_stock import add_stock_or_edit, get_all_stocks
-
 from cache import STOCK_CACHE
+from database.firebase.databse_user import add_or_update_user, get_user_by_id
+from database.firebase.User import User
+from database.sqlite.database_stock import add_stock_or_edit, get_all_stocks
 from database.stock_obj import Stock
 from stock_bot.errors import StockIsNoneException, StockNotFound, UserIsPoor
-from database.firebase.databse_user import get_user_by_id, add_or_update_user
-from database.firebase.User import User
 from utils import is_greater_than_zero
+from webscraper.get_stock import get_price_from_yahoo_finance
 
 logger = logging.getLogger("StockCog")
 
@@ -155,7 +152,7 @@ class Stock_Cog(commands.Cog):
         user = get_user_by_id(userId)
 
         if user is None:
-            user = User(userId, {}, 0)
+            user = User(userId, {}, 10**5) # $10000 to start 
             add_or_update_user(user)
         return user
 

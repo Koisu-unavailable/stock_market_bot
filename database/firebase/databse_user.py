@@ -1,5 +1,6 @@
 import firebase_admin
 from firebase_admin import firestore
+
 from database.firebase.User import User
 
 app = firebase_admin.initialize_app()
