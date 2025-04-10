@@ -17,6 +17,7 @@ def add_or_update_user(user: User ):
     user_doc = db.collection("users").document(str(user.userId))
     user_doc.set(user.to_dict())
     
+    
 
     
 

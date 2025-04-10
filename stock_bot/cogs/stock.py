@@ -1,5 +1,5 @@
 import logging
-from typing import List, Literal
+from typing import List
 
 import discord
 import discord.types
@@ -7,12 +7,11 @@ from discord import app_commands
 from discord.ext import commands
 
 from cache import STOCK_CACHE
+from functools import cache
 from database.firebase.databse_user import add_or_update_user, get_user_by_id
 from database.firebase.User import User
-from database.sqlite.database_stock import add_stock_or_edit, get_all_stocks
 from database.stock_obj import Stock
-from stock_bot.errors import StockIsNoneException, StockNotFound, UserIsPoor
-from utils import is_greater_than_zero
+from stock_bot.errors import StockIsNoneException, StockNotFound
 from webscraper.get_stock import get_price_from_yahoo_finance
 from stock_bot.transaction import (
     BuyStock,
@@ -71,8 +70,8 @@ class Stock_Cog(commands.Cog):
             await self._stock_not_found(interaction, e)
             return
         try:
-            transaction = BuyStock(stock.price, user, [], amount, symbol)
-        except ValueError as e:
+            transaction = BuyStock(stock.price, user, user, amount, symbol)
+        except ValueError:
             await interaction.followup.send(f"{amount} is not a valid amount.")
             return
         result = transaction.complete()
@@ -136,7 +135,7 @@ class Stock_Cog(commands.Cog):
         try:
             stock = self._get_stock_and_cache(symbol, stock_is_there)
             return stock
-        except StockIsNoneException as e:
+        except StockIsNoneException:
             raise StockNotFound(f"Stock: {symbol} was not found")
 
     async def _stock_not_found(self, interaction: discord.Interaction, e: Exception):
@@ -161,3 +160,4 @@ class Stock_Cog(commands.Cog):
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Stock_Cog(bot))
+    logger.info("Stock cog loaded")
