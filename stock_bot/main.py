@@ -29,7 +29,7 @@ async def on_ready() -> None:
     logging.info("Sync has run")
     await stock_bot.cogs.stock.setup(client)
     await stock_bot.cogs.buffs.setup(client)
-    await client.tree.sync(guild=discord.Object(1337277734480642109))
+    await client.tree.sync(guild=discord.Object(1337277734480642109)) # TESTING ONLY
     logging.info("Bot is ready!!")
     
     

@@ -7,7 +7,7 @@ from utils.database import get_user_from_interaction
 from database.firebase.databse_user import add_or_update_user
 import stock_bot.consumable
 from stock_bot.consumable import PriceIs0, Consumable, VALID_BUFFS
-from stock_bot.ui import broker_shop_factory, ChangeBrokerInBrokerShop, Shop_State
+from stock_bot.ui import broker_shop_embed_factory, ChangeBrokerInBrokerShop, Shop_View
 
 
 logger = logging.getLogger("BuffsCog")
@@ -61,29 +61,27 @@ class Buffs_Cog(commands.Cog):
     ):
         # implent broker cycling
         await interaction.response.defer(thinking=True, ephemeral=private)
-        embeds = [broker_shop_factory("Test"), broker_shop_factory("Test2")]
-        view = discord.ui.View()
-        state = Shop_State(current_broker =0 )
+        embeds = [broker_shop_embed_factory("Test"), broker_shop_embed_factory("Test2")]
+        view = Shop_View(owner=interaction.user)
+        
         view.add_item(
             ChangeBrokerInBrokerShop(
                 label="Back",
-                owner=interaction.user,
                 back=True,
                 embeds=embeds,
                 shop_interaction=interaction,
                 style=discord.ButtonStyle.red,
-                shop_state=state,
+                
             )
         )
         view.add_item(
             ChangeBrokerInBrokerShop(
                 label="Next",
-                owner=interaction.user,
                 back=False,
                 embeds=embeds,
                 shop_interaction=interaction,
                 style=discord.ButtonStyle.green,
-                shop_state=state,
+        
             )
         )
 

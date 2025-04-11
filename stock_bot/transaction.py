@@ -65,6 +65,17 @@ class BuyStock(Transaction):
 
         add_or_update_user(self.user)
         
+class BuyBroker(Transaction):
+    def __init__(self, price : float, user: User, consumables : List[Consumable], broker_id: str):  # type: ignore  # noqa: F821
+        super().__init__(price, user, consumables, 1)      
+        self.broker_id = broker_id
+    def _update_user(self):
+        self.user.money -= self.price
+        try:
+            self.user.brokers[self.broker_id] += 1 * self.amount
+        except KeyError:
+            self.user.brokers[self.broker_id] = 1 * self.amount
+        add_or_update_user(self.user)
 
         
 class SellStock(BuyStock): # almost exactley the same functionality just with a few signs flipped or at least the inits the same
