@@ -3,22 +3,31 @@ All ui's for discord bot
 """
 
 from __future__ import annotations
+
 from typing import List
+
 import discord
+from recordclass import RecordClass
 
 import cache
-from recordclass import RecordClass
-from stock_bot.transaction import BuyBroker
+from stock_bot.transaction import BuyBroker, TransactionResult
+from utils import database
+
 
 def broker_shop_embed_factory(broker_id: str):
     shop = discord.Embed(title="Buy a Broker")
     try:
         broker_name = cache.BROKERS[broker_id]["name"]
         broker_image_url = cache.BROKERS[broker_id]["image_url"]
+        broker_price = cache.BROKERS[broker_id]["price"]
+        broker_rarity = cache.BROKERS[broker_id]["rarity"]
     except KeyError:
         raise ValueError("Invalid Broker ID")
-    shop.add_field(name="Broker Name", value=broker_name)
-    shop.set_image(url=broker_image_url)
+    shop.add_field(name="Broker Name", value=broker_name).add_field(
+        name="Price", value=broker_price
+    ).set_image(url=broker_image_url).add_field(
+        name="Rarity", value=cache.BROKER_RARITIES[broker_rarity]
+    )
     return shop
 
 
@@ -109,15 +118,33 @@ class ChangeBrokerInBrokerShop(discord.ui.Button):
     def view(self) -> Shop_View:  # proper type
         return super().view
 
-class Buy_Button(discord.ui.Button):
-    async def callback(self, interaction: discord.Interaction):
-        transaction = BuyBroker()
-    
+
 class Shop_View(discord.ui.View):
-    def __init__(self, *, timeout=180, owner: discord.User):
+    def __init__(self, *, timeout=180, owner: discord.User, brokers: List[str]):
         super().__init__(timeout=timeout)
         self.current_broker = 0
         self.owner = owner
+        self.brokers = brokers
+
+    @discord.ui.button(style=discord.ButtonStyle.blurple, label="Buy Buy Buy!")
+    async def buy(self, interaction: discord.Interaction, button: discord.Button):
+        await interaction.response.defer()
+        broker_id = self.brokers[self.current_broker]
+        broker = cache.BROKERS[broker_id]
+        price = broker["price"]
+        transaction = BuyBroker(
+            price, await database.get_user_from_interaction(interaction), [], broker_id
+        )
+        result = transaction.complete()
+        match result:
+            case TransactionResult.Poor:
+                await interaction.followup.send(
+                    "Your to poor for this broker", ephemeral=True
+                )
+            case TransactionResult.Success:
+                await interaction.followup.send(
+                    "You now have this broker!", ephemeral=True
+                )
 
     async def interaction_check(self, interaction: discord.Interaction):
         if interaction.user != self.owner:

@@ -15,6 +15,8 @@ import cache
 import stock_bot.cogs.buffs
 import stock_bot.cogs.stock
 
+from discord.ext import tasks, commands
+
 assert load_dotenv("./.env")  # make sure it loads
 intents = discord.Intents.all()
 client = commands.Bot(
@@ -29,6 +31,7 @@ async def on_ready() -> None:
     logging.info("Sync has run")
     await stock_bot.cogs.stock.setup(client)
     await stock_bot.cogs.buffs.setup(client)
+
     await client.tree.sync(guild=discord.Object(1337277734480642109)) # TESTING ONLY
     logging.info("Bot is ready!!")
     
@@ -40,6 +43,10 @@ async def on_command_error(interaction: discord.Interaction, error):
     else:
         await interaction.followup.send("An error occured, please try again later.")
     logging.error("Error occured: ", exc_info=error)
+
+
+
+
 client.run(
     os.environ["TOKEN"],
     log_level=os.environ.get("LOG_LEVEL", "INFO").upper(),  

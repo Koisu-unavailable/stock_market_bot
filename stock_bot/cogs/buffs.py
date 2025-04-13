@@ -1,17 +1,21 @@
+import logging
+from random import choice
+
 import discord
 import discord.types
 from discord import app_commands
-from discord.ext import commands
-import logging
-from utils.database import get_user_from_interaction
-from database.firebase.databse_user import add_or_update_user
-import stock_bot.consumable
-from stock_bot.consumable import PriceIs0, Consumable, VALID_BUFFS
-from stock_bot.ui import broker_shop_embed_factory, ChangeBrokerInBrokerShop, Shop_View
+from discord.ext import commands, tasks
 
+import cache
+import cache.constants
+import stock_bot.consumable
+from database.firebase.databse_user import add_or_update_user
+from stock_bot.consumable import VALID_BUFFS, Consumable, PriceIs0
+from stock_bot.ui import ChangeBrokerInBrokerShop, Shop_View, broker_shop_embed_factory
+from utils.database import get_user_from_interaction
 
 logger = logging.getLogger("BuffsCog")
-
+cycle_broker_logger = logging.Logger("cycle_broker_task", logging.INFO)
 
 class ConsumableTransformer(app_commands.Transformer):
     async def transform(
@@ -26,6 +30,7 @@ class ConsumableTransformer(app_commands.Transformer):
 class Buffs_Cog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.cycle_brokers.start()
 
     group = app_commands.Group(name="buffs", description="all buff related commands")
 
@@ -57,12 +62,16 @@ class Buffs_Cog(commands.Cog):
         private="Whether you want everyone to see the shop, or just you."
     )
     async def show_broker_shop(
-        self, interaction: discord.Interaction, private: bool = True
+        self, interaction: discord.Interaction, private: bool = False
     ):
         # implent broker cycling
         await interaction.response.defer(thinking=True, ephemeral=private)
-        embeds = [broker_shop_embed_factory("Test"), broker_shop_embed_factory("Test2")]
-        view = Shop_View(owner=interaction.user)
+        brokers = [broker_id for broker_id in cache.CURRENT_BROKERS_IN_SHOP]
+        embeds = [broker_shop_embed_factory(broker_id) for broker_id in brokers]
+        if len(embeds) == 0:
+            pass # <-- add default brokers
+        print(len(embeds))
+        view = Shop_View(owner=interaction.user, brokers=brokers)
         
         view.add_item(
             ChangeBrokerInBrokerShop(
@@ -85,9 +94,26 @@ class Buffs_Cog(commands.Cog):
             )
         )
 
-        await interaction.followup.send(embed=embeds[0], view=view)
+        await interaction.followup.send(embed=embeds[0], view=view, ephemeral=private)
         return
-
+    @tasks.loop(seconds=5.0)
+    async def cycle_brokers(self):
+        list_of_brokers = []
+        for id in cache.BROKERS.keys():
+            match cache.BROKERS[id]["rarity"]:
+                case 0:
+                    list_of_brokers.extend([id] * 25)
+                case 1:
+                    list_of_brokers.extend([id] * 12)
+                case 2:
+                    list_of_brokers.extend([id] * 6)
+                case 3:
+                    list_of_brokers.extend([id] * 3)
+        cache.CURRENT_BROKERS_IN_SHOP = []
+        for i in range(cache.constants.BROKERS_IN_SHOP_AT_A_TIME):
+            cache.CURRENT_BROKERS_IN_SHOP.append(choice(list_of_brokers))
+        cache.CURRENT_BROKERS_IN_SHOP = list(set(cache.CURRENT_BROKERS_IN_SHOP)) # <-- remove dupes
+        cycle_broker_logger.info(f"Current brokers in shop: {cache.CURRENT_BROKERS_IN_SHOP}")
 
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Buffs_Cog(bot))

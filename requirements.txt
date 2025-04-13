@@ -3,7 +3,6 @@ python-dotenv
 requests
 bs4
 setuptools
-sqlite3
 fake-useragent
 firebase_admin
 recordclass

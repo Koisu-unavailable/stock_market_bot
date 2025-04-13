@@ -1,10 +1,14 @@
 {
     "Test" : {
         "name": "Test Joker",
-        "image_url": "https://quicklatex.com/cache3/82/ql_0676ade0cd04eda37aeb3d0bcd427682_l3.png"
+        "image_url": "https://quicklatex.com/cache3/82/ql_0676ade0cd04eda37aeb3d0bcd427682_l3.png",
+        "price": 12,
+        "rarity": 0
     },
     "Test2" : {
         "name": "Test Joker2222",
-        "image_url": "https://quicklatex.com/cache3/82/ql_0676ade0cd04eda37aeb3d0bcd427682_l3.png"
+        "image_url": "https://quicklatex.com/cache3/82/ql_0676ade0cd04eda37aeb3d0bcd427682_l3.png",
+        "price": 13,
+        "rarity": 2
     }
 }
