@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
 setup(
-    name='project',
+    name="project",
     packages=find_packages(),
 )

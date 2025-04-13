@@ -7,18 +7,17 @@ from discord import app_commands
 from discord.ext import commands
 
 from cache import STOCK_CACHE
-from functools import cache
 from database.firebase.databse_user import add_or_update_user, get_user_by_id
 from database.firebase.User import User
 from database.stock_obj import Stock
 from stock_bot.errors import StockIsNoneException, StockNotFound
-from webscraper.get_stock import get_price_from_yahoo_finance
 from stock_bot.transaction import (
     BuyStock,
     SellStock,
-    TransactionResult,
     SellTransactionResult,
+    TransactionResult,
 )
+from webscraper.get_stock import get_price_from_yahoo_finance
 
 logger = logging.getLogger("StockCog")
 
@@ -111,7 +110,9 @@ class Stock_Cog(commands.Cog):
                     f"Successfully sold {amount} of {stock.display_name} stock(s)"
                 )
             case SellTransactionResult.NotEnoughStock:
-                await interaction.followup.send(f"You don't have enough of the requested stock {stock.display_name}.")
+                await interaction.followup.send(
+                    f"You don't have enough of the requested stock {stock.display_name}."
+                )
         return
 
     @sell_stock.autocomplete("symbol")
@@ -129,7 +130,7 @@ class Stock_Cog(commands.Cog):
         all_symbols = STOCK_CACHE.keys()
         stock_is_there = False
         for stock_symbol in all_symbols:
-            if stock_symbol == symbol:
+            if stock_symbol == symbol: 
                 stock_is_there = True
                 break
         try:

@@ -7,7 +7,6 @@ from __future__ import annotations
 from typing import List
 
 import discord
-from recordclass import RecordClass
 
 import cache
 from stock_bot.transaction import BuyBroker, TransactionResult

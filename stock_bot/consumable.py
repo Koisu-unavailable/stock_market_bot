@@ -8,8 +8,9 @@ VALID_BUFFS = [
 
 class Consumable(ABC):
     def __init__(self):
-        self._id: str
+        self._id: str = type(self).__name__
         self._price: str
+        self.display_name: str
         pass
 
     @property
@@ -28,7 +29,8 @@ class Consumable(ABC):
 class PriceIs0(Consumable):
     def __init__(self):
         super().__init__()
-        self._id = "priceIs0"
+        self._price = 100
+        self.display_name = "Price is 0"
 
     def consume(self, transaction):
         transaction.price = 0

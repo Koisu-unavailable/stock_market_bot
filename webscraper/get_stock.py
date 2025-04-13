@@ -5,12 +5,11 @@ import requests
 
 import logging
 
-from database.sqlite.database_stock import add_stock_or_edit, get_all_stocks
 from database.stock_obj import Stock
-from utils.get_all_stock_symbols import get_all_symbols
 from utils import trim_at_char
 
 from fake_useragent import UserAgent
+
 logging.basicConfig(level=logging.NOTSET)
 
 
@@ -23,8 +22,6 @@ headers = {
     "User-Agent": ua.random,
     "From": os.environ["email"],
 }
-
-
 
 
 def get_price_from_yahoo_finance(symbol: str):
@@ -45,21 +42,17 @@ def get_price_from_yahoo_finance(symbol: str):
     display_name = trim_at_char(display_name_element.contents[0], "(")
     if price_element is None:
         return None
-    stock_price = float(
-        str(
-            price_element.contents[0]
-        ).strip(" ")
-    )
+    stock_price = float(str(price_element.contents[0]).strip(" "))
     return Stock(symbol, stock_price, exchange, display_name)
-    
+
+
 # def _add_stock(symbol: str):
 #     add_stock_or_edit(symbol, get_price_from_yahoo_finance(symbol))
-    
+
 # def update_database(): <-- THIS IS A DEATH FUNCTION DON'T RUN IT
 #     for stock in STOCKS:
 #         _add_stock(stock)
-        
-        
-        
+
+
 if __name__ == "__main__":
     print(get_price_from_yahoo_finance("goog"))

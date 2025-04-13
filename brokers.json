@@ -1,14 +1,38 @@
 {
     "Test" : {
-        "name": "Test Joker",
+        "name": "w",
         "image_url": "https://quicklatex.com/cache3/82/ql_0676ade0cd04eda37aeb3d0bcd427682_l3.png",
         "price": 12,
         "rarity": 0
     },
     "Test2" : {
-        "name": "Test Joker2222",
+        "name": "andrew",
+        "image_url": "https://quicklatex.com/cache3/82/ql_0676ade0cd04eda37aeb3d0bcd427682_l3.png",
+        "price": 188734,
+        "rarity": 2
+    },
+    "Test3" : {
+        "name": "phillip",
+        "image_url": "https://quicklatex.com/cache3/82/ql_0676ade0cd04eda37aeb3d0bcd427682_l3.png",
+        "price": 132222,
+        "rarity": 2
+    },
+    "Test4" : {
+        "name": "french",
         "image_url": "https://quicklatex.com/cache3/82/ql_0676ade0cd04eda37aeb3d0bcd427682_l3.png",
         "price": 13,
         "rarity": 2
+    },
+    "Test5" : {
+        "name": "jimmy",
+        "image_url": "https://quicklatex.com/cache3/82/ql_0676ade0cd04eda37aeb3d0bcd427682_l3.png",
+        "price": 131212,
+        "rarity": 3
+    },
+    "Test6" : {
+        "name": "jimmy2",
+        "image_url": "https://quicklatex.com/cache3/82/ql_0676ade0cd04eda37aeb3d0bcd427682_l3.png",
+        "price": 1e90,
+        "rarity": 3
     }
 }

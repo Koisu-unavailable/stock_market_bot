@@ -6,8 +6,6 @@ import discord
 import discord.context_managers
 import discord.ext
 import discord.ext.commands
-import requests
-from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 
@@ -15,7 +13,6 @@ import cache
 import stock_bot.cogs.buffs
 import stock_bot.cogs.stock
 
-from discord.ext import tasks, commands
 
 assert load_dotenv("./.env")  # make sure it loads
 intents = discord.Intents.all()
@@ -26,29 +23,29 @@ client = commands.Bot(
 with open("./brokers.json", "r") as f:
     cache.BROKERS = json.load(f)
 
+
 @client.event
 async def on_ready() -> None:
     logging.info("Sync has run")
     await stock_bot.cogs.stock.setup(client)
     await stock_bot.cogs.buffs.setup(client)
-
-    await client.tree.sync(guild=discord.Object(1337277734480642109)) # TESTING ONLY
+    await client.tree.sync(guild=discord.Object(1337277734480642109))  # TESTING ONLY
     logging.info("Bot is ready!!")
-    
-    
+
+
 @client.tree.error
 async def on_command_error(interaction: discord.Interaction, error):
     if not interaction.response.is_done:
-        await interaction.response.send_message("An error occured, please try again later.")
+        await interaction.response.send_message(
+            "An error occured, please try again later."
+        )
     else:
         await interaction.followup.send("An error occured, please try again later.")
     logging.error("Error occured: ", exc_info=error)
 
 
-
-
 client.run(
     os.environ["TOKEN"],
-    log_level=os.environ.get("LOG_LEVEL", "INFO").upper(),  
+    log_level=os.environ.get("LOG_LEVEL", "INFO").upper(),
     root_logger=True,
 )
