@@ -47,10 +47,7 @@ class Buffs_Cog(commands.Cog):
         await interaction.followup.send(user.consumables)
 
     @group.command(name="buy_consumable", description="test")
-    async def buy_consumable(
-        self,
-        interaction: discord.Interaction,
-        buff: app_commands.Transform[Consumable, ConsumableTransformer],
+    async def buy_consumable(self,interaction: discord.Interaction,buff: app_commands.Transform[Consumable, ConsumableTransformer],
     ):
         await interaction.response.defer(ephemeral=True, thinking=True)
         if buff is None:
