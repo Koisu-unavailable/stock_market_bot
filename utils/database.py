@@ -9,6 +9,6 @@ async def get_user_from_interaction(interaction: discord.Interaction) -> User:
     user = get_user_by_id(userId)
 
     if user is None:
-        user = User(userId, {}, 10**5)  # $10000 to start
+        user = User(userId, {}, 10**5, [], {}, [], [])  # $10000 to start
         add_or_update_user(user)
     return user

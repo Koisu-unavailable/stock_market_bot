@@ -4,9 +4,10 @@ from typing import List
 import discord
 import discord.types
 from discord import app_commands
-from discord.ext import commands
+from discord.ext import commands, tasks
 
-from cache import STOCK_CACHE
+
+from cache import STOCK_CACHE, auto_complete_cache,  auto_complete_cache_entry
 from database.firebase.databse_user import add_or_update_user, get_user_by_id
 from database.firebase.User import User
 from database.stock_obj import Stock
@@ -18,7 +19,8 @@ from stock_bot.transaction import (
     TransactionResult,
 )
 from webscraper.get_stock import get_price_from_yahoo_finance
-
+import datetime
+import time
 logger = logging.getLogger("StockCog")
 
 
@@ -120,8 +122,13 @@ class Stock_Cog(commands.Cog):
         self, interaction: discord.Interaction, current: str
     ) -> List[app_commands.Choice[str]]:
         data = []
-        user = get_user_by_id(interaction.user.id)
-        for symbol in user.stocks.keys():
+        stocks = []
+        for entry in auto_complete_cache:
+            if entry.user_id == interaction.user.id:
+                stocks = entry.stocks
+        if stocks == []:
+            stocks = get_user_by_id(interaction.user.id).stocks.keys()
+        for symbol in stocks:
             if symbol != "None" and current.lower() in symbol:
                 data.append(app_commands.Choice(name=symbol, value=symbol))
         return data
@@ -157,6 +164,13 @@ class Stock_Cog(commands.Cog):
             user = User(userId, {}, 10**5)  # $10000 to start
             add_or_update_user(user)
         return user
+    @tasks.loop(seconds=1.0)
+    async def invalidate_entries(self):
+        for entry in auto_complete_cache:
+            curr_time = datetime.datetime.fromtimestamp(time.time())
+            if (entry.last_accessed - curr_time) >= datetime.timedelta(seconds=15):
+                auto_complete_cache.remove(entry)
+        
 
 
 async def setup(bot: commands.Bot) -> None:

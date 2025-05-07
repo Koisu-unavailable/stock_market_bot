@@ -10,9 +10,10 @@ from discord.ext import commands, tasks
 import cache
 import cache.constants
 import stock_bot.consumable
-from stock_bot.consumable import VALID_BUFFS, Consumable
+from stock_bot.consumable import  Consumable
 from stock_bot.ui import ChangeBrokerInBrokerShop, Shop_View, broker_shop_embed_factory
 from utils.database import get_user_from_interaction
+from utils.types import Consumable_ID_Type, is_valid_consumable_id
 from stock_bot.transaction import BuyConsumable, TransactionResult
 
 logger = logging.getLogger("BuffsCog")
@@ -23,7 +24,7 @@ class ConsumableTransformer(app_commands.Transformer):
     async def transform(
         self, interaction: discord.Interaction, value: str
     ) -> Consumable:
-        if value not in VALID_BUFFS:
+        if not is_valid_consumable_id(value):
             return None
         consumable = getattr(stock_bot.consumable, value)
         return consumable()
@@ -37,14 +38,55 @@ class Buffs_Cog(commands.Cog):
 
     group = app_commands.Group(name="buffs", description="all buff related commands")
 
-    @group.command(name="view", description="view all your buffs and brokers")
+    @group.command(name="view", description="view all your buffs and brokers",)
     @app_commands.describe(
         what='What you wanna view'
     )
     async def view_buffs(self, interaction: discord.Interaction, what: Literal["BROKERS", "BUFFS"]):
-        await interaction.response.defer(ephemeral=True, thinking=True)
+        await interaction.response.defer(ephemeral=False, thinking=True)
         user = await get_user_from_interaction(interaction)
-        await interaction.followup.send(user.consumables)
+        if what == "BUFFS":
+            msg = ""
+            msg += f"# {interaction.user.mention}'s Buffs\n# Inactive (sitting in inventory)"
+            if user.consumables.keys() == []:
+                await interaction.followup.send("You have no buffs!")
+            inactive_buffs: list[Consumable_ID_Type] = [consumable for consumable in user.consumables.keys() if consumable not in user.active_consumables]
+            inactive_buffs_str = ""
+            if inactive_buffs == []:
+                inactive_buffs_str = "There are no inactive buffs."            
+
+            for buff_id in inactive_buffs:
+                buff = getattr(stock_bot.consumable, buff_id)()
+                if inactive_buffs.index(buff_id) == 0:
+                    inactive_buffs_str += f"**{buff.display_name}** : {user.consumables[buff_id]}"
+            msg += "\n" + inactive_buffs_str
+            msg += "\n# Active (will be used on next transaction)\n"
+            for buff_id in user.active_consumables:
+                buff = getattr(stock_bot.consumable, buff_id)()
+                if user.active_consumables.index(buff_id) == 0:
+                    msg += f"**{buff.display_name}** : {user.consumables[buff_id]}"
+                else:
+                    msg += f"\n**{buff.display_name}** : {user.consumables[buff_id]}"
+            await interaction.followup.send(msg)
+        if what == "BROKERS":
+            msg = ""
+            msg += f"# {interaction.user.mention}'s Brokers\n# Inactive (sitting in inventory)\n"
+            if user.brokers == []:
+                await interaction.followup.send("You have no brokers!")
+            inactive_brokers = [broker for broker in user.brokers if broker not in user.active_brokers]
+            if inactive_brokers == []:
+                msg += "No inactive brokers\n"
+            for broker_id in inactive_brokers:
+                broker = cache.BROKERS[broker_id]
+                msg += f"- **{broker['name']}**\n"
+            msg += "# Equipped Brokers\n"
+            if user.active_brokers == []:
+                msg += "No equipped brokers"
+            for broker_id in user.active_brokers:
+                broker = cache.BROKERS[broker_id]
+                msg += f"- **{broker['name']}**\n"
+            await interaction.followup.send(msg)
+                
 
     @group.command(name="buy_consumable", description="test")
     async def buy_consumable(self,interaction: discord.Interaction,buff: app_commands.Transform[Consumable, ConsumableTransformer],
@@ -136,7 +178,7 @@ class Buffs_Cog(commands.Cog):
             set(cache.CURRENT_BROKERS_IN_SHOP)
         )  # <-- remove dupes
         shuffle(cache.CURRENT_BROKERS_IN_SHOP)
-        cycle_broker_logger.error(f"Cycled Jokers to: {cache.CURRENT_BROKERS_IN_SHOP}")
+        cycle_broker_logger.info(f"Cycled Jokers to: {cache.CURRENT_BROKERS_IN_SHOP}")
         
 
 async def setup(bot: commands.Bot) -> None:

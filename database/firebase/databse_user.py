@@ -20,5 +20,5 @@ def add_or_update_user(user: User):
     user_doc.set(user.to_dict())
 
 
-if __name__ == "__main__":
-    get_user_by_id("danDadanPeak")
+# if __name__ == "__main__":
+#     get_user_by_id("danDadanPeak")

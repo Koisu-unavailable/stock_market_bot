@@ -5,6 +5,7 @@ def get_all_symbols() -> list[str]:
     list_of_stocks = requests.get(
         "https://www.nasdaqtrader.com/dynamic/symdir/nasdaqlisted.txt"
     ).text
+    print("got")
 
     with open("list_of_stocks.txt", "w") as f:
         f.write(list_of_stocks)

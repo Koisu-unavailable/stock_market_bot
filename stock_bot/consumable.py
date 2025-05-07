@@ -1,14 +1,11 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
-
-VALID_BUFFS = [
-    "PriceIs0",
-]
+from typing import Literal
 
 
 class Consumable(ABC):
     def __init__(self):
-        self._id: str = type(self).__name__
+        self._id: str = type(self).__name__.lower()
         self._price: str
         self.display_name: str
         pass
@@ -26,7 +23,7 @@ class Consumable(ABC):
         pass
 
 
-class PriceIs0(Consumable):
+class priceis0(Consumable):
     def __init__(self):
         super().__init__()
         self._price = 100
