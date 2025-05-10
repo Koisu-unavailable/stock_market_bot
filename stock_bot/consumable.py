@@ -27,7 +27,7 @@ class priceis0(Consumable):
     def __init__(self):
         super().__init__()
         self._price = 100
-        self.display_name = "Price is 0"
+        self.display_name = "Freebie"
 
     def consume(self, transaction):
         transaction.price = 0

@@ -27,6 +27,7 @@ logger = logging.getLogger("StockCog")
 class Stock_Cog(commands.Cog):
     def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
+        self.invalidate_entries.start()
 
     group = app_commands.Group(name="stock", description="all stock related commands")
 
@@ -176,3 +177,4 @@ class Stock_Cog(commands.Cog):
 async def setup(bot: commands.Bot) -> None:
     await bot.add_cog(Stock_Cog(bot))
     logger.info("Stock cog loaded")
+    

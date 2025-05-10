@@ -12,15 +12,17 @@ from dotenv import load_dotenv
 import cache
 import stock_bot.cogs.buffs
 import stock_bot.cogs.stock
+import stock_bot.cogs.miscellaneous
 
 
 assert load_dotenv("./.env")  # make sure it loads
-intents = discord.Intents.all()
+intents = discord.Intents.all() # FIX
 TESTING_GUILD = discord.Object(1337277734480642109)
 
 client = commands.Bot(
-    intents=intents, command_prefix="!"  # command prefix doesn't really matter as this bot uses slash commands because they're cooler 😀
-) 
+    intents=intents,
+    command_prefix="!",  # command prefix doesn't really matter as this bot uses slash commands because they're cooler 😀
+)
 
 with open("./brokers.json", "r") as f:
     cache.BROKERS = json.load(f)
@@ -31,34 +33,37 @@ async def on_ready() -> None:
     logging.info("Sync has run")
     await stock_bot.cogs.stock.setup(client)
     await stock_bot.cogs.buffs.setup(client)
-
-    await client.tree.sync()  # TESTING ONLY
+    await stock_bot.cogs.miscellaneous.setup(client)
+    await client.tree.sync(guild=TESTING_GUILD)  # TESTING ONLY
     logging.info("Bot is ready!!")
 
 
 try:
-    is_dev =bool( os.environ["DEV"])
+    is_dev = bool(int(os.environ["DEV"]))
 except KeyError:
     is_dev = False
-logging.info("We're in dev envirorment" if is_dev else "We're in production envirorment") 
-    
+logging.info(
+    "We're in dev envirorment" if is_dev else "We're in production envirorment"
+)
+
 if is_dev:
-    @client.tree.command(
-        name="reload_and_sync"
-    )
+
+    @client.tree.command(name="reload_and_sync")
     async def reload(interaction: discord.Interaction):
         await interaction.response.defer(thinking=True)
         logging.info("reloading bot")
         for cog in client.cogs.values():
-            await client.add_cog(await client.remove_cog(cog.__cog_name__, guild=TESTING_GUILD))
+            cog_to_reload = await client.remove_cog(cog.__cog_name__, guild=TESTING_GUILD)
+            await client.add_cog(
+                cog_to_reload
+            )
+            
 
             logging.info(f"reloaded cog {cog.__cog_name__}")
         interaction.followup.send("reloaded cogs")
         await client.tree.sync(guild=TESTING_GUILD)
         interaction.followup.send("sunc")
-        
-            
-            
+
 
 @client.tree.error
 async def on_command_error(interaction: discord.Interaction, error):
